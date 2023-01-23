@@ -243,7 +243,7 @@ while game_status != 'quit':
 
             if event.key == K_y:
                 count_restart += 1
-                level += 25
+                level += 15
                 bulbasaur = Pokemon('Bulbasaur', level, 25, 175)
                 charmander = Pokemon('Charmander', level, 175, 175)
                 squirtle = Pokemon('Squirtle', level, 325, 175)
