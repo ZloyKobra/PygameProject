@@ -17,13 +17,13 @@ pygame.display.set_caption('Pokemon Battle')
 
 black = (0, 0, 0)
 gold = (218, 165, 32)
-grey = (200, 200, 200)
 green = (0, 200, 0)
 red = (200, 0, 0)
 white = (255, 255, 255)
 
 base_url = 'https://pokeapi.co/api/v2'
 
+count_restart = 0
 
 class Move():
 
@@ -81,7 +81,7 @@ class Pokemon(pygame.sprite.Sprite):
 
     def perform_attack(self, other, move):
 
-        display_message(f'{self.name} used {move.name}')
+        display_message(f'{self.name} использовал {move.name}')
 
         time.sleep(2)
 
@@ -235,7 +235,6 @@ rival_pokemon = None
 
 game_status = 'select pokemon'
 while game_status != 'quit':
-
     for event in pygame.event.get():
         if event.type == QUIT:
             game_status = 'quit'
@@ -243,6 +242,8 @@ while game_status != 'quit':
         if event.type == KEYDOWN:
 
             if event.key == K_y:
+                count_restart += 1
+                level += 25
                 bulbasaur = Pokemon('Bulbasaur', level, 25, 175)
                 charmander = Pokemon('Charmander', level, 175, 175)
                 squirtle = Pokemon('Squirtle', level, 325, 175)
@@ -268,9 +269,10 @@ while game_status != 'quit':
 
                     if pokemons[i].get_rect().collidepoint(mouse_click):
                         player_pokemon = pokemons[i]
-                        rival_pokemon = pokemons[(i + 1) % len(pokemons)]
+                        rival_pokemon = pokemons[(i + random.randint(1, 8)) % len(pokemons)]
 
                         rival_pokemon.level = int(rival_pokemon.level * .75)
+                        player_pokemon.level -= 1 * count_restart
 
                         player_pokemon.hp_x = 275
                         player_pokemon.hp_y = 250
@@ -289,7 +291,7 @@ while game_status != 'quit':
 
                 fight_button = create_button(240, 140, 10, 350, 130, 412, 'Fight')
                 potion_button = create_button(240, 140, 250, 350, 370, 412,
-                                              f'Use Potion ({player_pokemon.num_potions})')
+                                              f'Использовал зелье ({player_pokemon.num_potions})')
 
                 pygame.draw.rect(game, black, (10, 350, 480, 140), 3)
                 pygame.display.update()
@@ -300,12 +302,12 @@ while game_status != 'quit':
                 if potion_button.collidepoint(mouse_click):
 
                     if player_pokemon.num_potions == 0:
-                        display_message('No more potions left')
+                        display_message('Не осталось зельей здоровья')
                         time.sleep(2)
                         game_status = 'player move'
                     else:
                         player_pokemon.use_potion()
-                        display_message(f'{player_pokemon.name} used potion')
+                        display_message(f'{player_pokemon.name} использовал зелье')
                         time.sleep(2)
                         game_status = 'rival turn'
 
@@ -386,19 +388,17 @@ while game_status != 'quit':
         while alpha < 255:
             game.fill(white)
             rival_pokemon.draw(alpha)
-            display_message(f'Rival sent out {rival_pokemon.name}!')
+            display_message(f'На вас напал {rival_pokemon.name}!')
             alpha += .4
 
             pygame.display.update()
-
-        time.sleep(1)
 
         alpha = 0
         while alpha < 255:
             game.fill(white)
             rival_pokemon.draw()
             player_pokemon.draw(alpha)
-            display_message(f'Go {player_pokemon.name}!')
+            display_message(f'Вперёд {player_pokemon.name}!')
             alpha += .4
 
             pygame.display.update()
@@ -413,7 +413,6 @@ while game_status != 'quit':
 
         pygame.display.update()
 
-        time.sleep(1)
 
     if game_status == 'player turn':
         game.fill(white)
@@ -423,8 +422,8 @@ while game_status != 'quit':
         rival_pokemon.draw_hp()
 
         fight_button = create_button(240, 140, 10, 350, 130, 412, 'Fight')
-        potion_button = create_button(240, 140, 250, 350, 370, 412, f'Use Potion ({player_pokemon.num_potions})')
-
+        potion_button = create_button(240, 140, 250, 350, 370, 412,
+                                      f'Использовать зелье ({player_pokemon.num_potions})')
         pygame.draw.rect(game, black, (10, 350, 480, 140), 3)
 
         pygame.display.update()
@@ -461,11 +460,9 @@ while game_status != 'quit':
         rival_pokemon.draw()
         player_pokemon.draw_hp()
         rival_pokemon.draw_hp()
-
         display_message('')
-        time.sleep(2)
-
         move = random.choice(rival_pokemon.moves)
+        time.sleep(2)
         rival_pokemon.perform_attack(player_pokemon, move)
 
         if player_pokemon.current_hp == 0:
@@ -487,11 +484,12 @@ while game_status != 'quit':
             if rival_pokemon.current_hp == 0:
                 player_pokemon.draw()
                 rival_pokemon.draw(alpha)
-                display_message(f'{rival_pokemon.name} fainted!')
+                display_message(f'{rival_pokemon.name} уничтожен!')
             else:
                 player_pokemon.draw(alpha)
                 rival_pokemon.draw()
-                display_message(f'{player_pokemon.name} fainted!')
+                count_restart = 0
+                display_message(f'{player_pokemon.name} унижен!')
             alpha -= .4
 
             pygame.display.update()
@@ -499,6 +497,6 @@ while game_status != 'quit':
         game_status = 'gameover'
 
     if game_status == 'gameover':
-        display_message('Play again (Y/N)?')
+        display_message('Сыграть ещё раз(Y/N)?')
 
 pygame.quit()
